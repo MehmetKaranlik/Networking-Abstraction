@@ -31,6 +31,7 @@ protocol INetworkManager {
    func headerGenerator(request : inout URLRequest)
    func queryGenerator(url : inout URL, queryParameters : [String: String]?)
    func handleRequest(urlRequest : URLRequest) async -> (Data,URLResponse)?
+   func refreshToken() async -> String?
 }
 
 
@@ -44,6 +45,7 @@ extension INetworkManager {
          queries.append(URLQueryItem(name: $0, value: $1))
       }
       url.append(queryItems: queries)
+      print(url)
    }
 
    func headerGenerator(request : inout URLRequest) {
@@ -65,6 +67,17 @@ extension INetworkManager {
          return (data,response)
       }catch let e {
          print("Error while fetching data : \(e)")
+      }
+      return nil
+   }
+   
+   func refreshToken() async -> String? {
+      let url = URL(string: networkingOptions.accessTokenURL)!
+      let (data,response) = try! await  URLSession.shared.data(from: url)
+      guard let response = response as? HTTPURLResponse else { return nil }
+      if response.statusCode > 199 && response.statusCode < 300 {
+         let decodedData = try? JSONDecoder().decode(RefreshTokenResponse.self, from: data)
+         return decodedData?.accesToken
       }
       return nil
    }
