@@ -51,10 +51,11 @@ class NetworkManager: INetworkManager {
       } else {
          await handleRetry()
       }
-
+      // retry on unsuccessfull statusCode
       func handleRetry() async {
          if networkingOptions.isEligibleToRetry {
             let newToken: String? = await refreshToken()
+
             if newToken != nil {
                networkingOptions.updateAccesToken(newToken!)
 
@@ -62,7 +63,9 @@ class NetworkManager: INetworkManager {
                   networkPath: networkPath, parseModel: parseModel,
                   requestType: requestType, queryParameters: queryParameters, body: body
                ) { self.networkingOptions.increaseRetryCount() }
+
             } else { onFail() }
+
          } else { onFail() }
       }
       return BaseResponseModel(response: nil, data: nil)
