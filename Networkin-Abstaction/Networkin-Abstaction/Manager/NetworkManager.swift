@@ -81,7 +81,7 @@ struct NetworkingOptions {
    }
 
    var isEligibleToRetry: Bool {
-      currentCount >= retryCount
+      currentCount <= retryCount
    }
 
    // MARK: functions
