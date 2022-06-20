@@ -38,7 +38,6 @@ class NetworkManager: INetworkManager {
          bodyGenerator(request: &request, data: body)
          headerGenerator(request: &request)
 
-
          let (data,response) : (Data?,URLResponse?)  = await handleRequest(urlRequest: request) ?? (nil,nil)
          guard data != nil, let response = response as? HTTPURLResponse else { return BaseResponseModel(response: nil, data: nil)}
          if response.statusCode > 199 && response.statusCode < 300 {
@@ -48,20 +47,36 @@ class NetworkManager: INetworkManager {
          }else {
             await handleRetry()
          }
+
          func handleRetry() async {
             if networkingOptions.isEligibleToRetry {
-               try? await self.send(networkPath: networkPath, parseModel: parseModel,
-                                    requestType: requestType, queryParameters: queryParameters, body: body) {
-                  self.networkingOptions.increaseRetryCount()
+               let newToken : String? = await getToken()
+               if newToken != nil {
+                  networkingOptions.updateAccesToken(newToken!)
+                  try? await self.send(networkPath: networkPath, parseModel: parseModel,
+                                       requestType: requestType, queryParameters: queryParameters, body: body) {
+                     self.networkingOptions.increaseRetryCount()
+                  }
+               }else {
+                  onFail()
                }
             }else {
                onFail()
             }
          }
-         return BaseResponseModel(
-            response: URLResponse(),
-            data: nil)
+         return BaseResponseModel(response: nil,data: nil)
       }
+
+   private func getToken() async -> String? {
+      let url = URL(string: networkingOptions.accessTokenURL)!
+      let (data,response) = try! await  URLSession.shared.data(from: url)
+      guard let response = response as? HTTPURLResponse else { return nil }
+      if response.statusCode > 199 && response.statusCode < 300 {
+         let decodedData = try? JSONDecoder().decode(RefreshTokenResponse.self, from: data)
+         return decodedData?.accesToken
+      }
+      return nil
+   }
 }
    
    
