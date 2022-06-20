@@ -14,7 +14,6 @@ class ExampleViewModel : ExampleBaseViewModel, ObservableObject {
 
  @Published  var example : Example? = [] {
       didSet{
-         print("example did set")
       }
    }
 

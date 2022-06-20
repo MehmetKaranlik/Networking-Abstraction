@@ -17,7 +17,6 @@ struct ExampleService {
          parseModel: Example.self,
          requestType: RequestType.GET,
          queryParameters: nil, body: nil) {
-            print("example error test")
          }
       return result?.data != nil ? result?.data : nil
    }

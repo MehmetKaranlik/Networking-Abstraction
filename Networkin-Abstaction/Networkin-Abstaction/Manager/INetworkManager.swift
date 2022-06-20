@@ -46,7 +46,6 @@ extension INetworkManager {
          queries.append(URLQueryItem(name: $0, value: $1))
       }
       url.append(queryItems: queries)
-      print(url)
    }
 
    func headerGenerator(request : inout URLRequest) {
@@ -67,7 +66,13 @@ extension INetworkManager {
          let (data,response) = try await URLSession.shared.data(for: urlRequest)
          return (data,response)
       }catch let e {
-         print("Error while fetching data : \(e)")
+
+         print("""
+            -----------------------------------
+            Error while fetching data : \(e)
+            -----------------------------------
+            """
+         )
       }
       return nil
    }
@@ -88,7 +93,13 @@ extension INetworkManager {
          let dataModel = try JSONDecoder().decode(T.self, from: data)
          return dataModel
       }catch let e {
-         print("JSON Serilization Error : \(e)")
+         print(
+            """
+            ------------------------------
+            JSON Serialization Error : \(e)
+            ------------------------------
+            """
+         )
          return nil
       }
    }
