@@ -32,6 +32,7 @@ protocol INetworkManager {
    func queryGenerator(url : inout URL, queryParameters : [String: String]?)
    func handleRequest(urlRequest : URLRequest) async -> (Data,URLResponse)?
    func refreshToken() async -> String?
+   func decodeData<T:Codable>(model : T.Type , data : Data) -> T?
 }
 
 
@@ -81,4 +82,15 @@ extension INetworkManager {
       }
       return nil
    }
+
+   func decodeData<T:Codable>(model : T.Type , data : Data) -> T? {
+      do {
+         let dataModel = try JSONDecoder().decode(T.self, from: data)
+         return dataModel
+      }catch let e {
+         print("JSON Serilization Error : \(e)")
+         return nil
+      }
+   }
+
 }

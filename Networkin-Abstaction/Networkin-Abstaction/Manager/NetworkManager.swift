@@ -46,7 +46,7 @@ class NetworkManager: INetworkManager {
       if response.statusCode > 199, response.statusCode < 300 {
          networkingOptions.resetRetryCount()
          print("this works")
-         let decodedData = try? JSONDecoder().decode(T.self, from: data!)
+         let decodedData = decodeData(model: parseModel.self, data: data!)
          return BaseResponseModel(response: response, data: decodedData)
 
       } else {
@@ -54,10 +54,12 @@ class NetworkManager: INetworkManager {
       }
 
       func handleRetry() async {
+         print("handle calisti")
          if networkingOptions.isEligibleToRetry {
             let newToken: String? = await refreshToken()
             if newToken != nil {
                networkingOptions.updateAccesToken(newToken!)
+
                try? await send(
                   networkPath: networkPath, parseModel: parseModel,
                   requestType: requestType, queryParameters: queryParameters, body: body
