@@ -12,8 +12,8 @@ class ExampleViewModel : ExampleBaseViewModel, ObservableObject {
 
    let service = ExampleService(networkManager: networkManager)
 
-   var example : Example? = nil {
-      didSet {
+ @Published  var example : Example? = [] {
+      didSet{
          print("example did set")
       }
    }
@@ -31,7 +31,9 @@ class ExampleViewModel : ExampleBaseViewModel, ObservableObject {
       Task {
          let result = await service.fetchExample()
          if result != nil {
-            example = result
+            DispatchQueue.main.async {
+               self.example = result
+            }
          }
       }
    }

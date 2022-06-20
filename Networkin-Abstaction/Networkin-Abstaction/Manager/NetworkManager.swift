@@ -42,6 +42,7 @@ class NetworkManager: INetworkManager {
          guard data != nil, let response = response as? HTTPURLResponse else { return BaseResponseModel(response: nil, data: nil)}
          if response.statusCode > 199 && response.statusCode < 300 {
             networkingOptions.resetRetryCount()
+            print("this works")
             let decodedData = try? JSONDecoder().decode(T.self, from: data!)
             return BaseResponseModel(response: response, data: decodedData)
          }else {

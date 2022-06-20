@@ -8,7 +8,19 @@
 import Foundation
 
 
-struct Example : Codable {
-   let id : String
-   let username : String
+
+
+import Foundation
+
+   // MARK: - ExampleElement
+struct ExampleElement: Codable {
+   let postID, id: Int?
+   let name, email, body: String?
+
+   enum CodingKeys: String, CodingKey {
+      case postID = "postId"
+      case id, name, email, body
+   }
 }
+
+typealias Example = [ExampleElement]

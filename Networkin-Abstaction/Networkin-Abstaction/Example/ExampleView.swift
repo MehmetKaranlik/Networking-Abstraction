@@ -8,12 +8,14 @@
 import SwiftUI
 
 struct ContentView: View {
+   @StateObject var viewModel = ExampleViewModel()
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+           List {
+              ForEach(viewModel.example!.indices,id:\.self) { index in
+                 Text(viewModel.example![index].name ?? "")
+              }
+           }
         }
     }
 }

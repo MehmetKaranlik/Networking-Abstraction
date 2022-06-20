@@ -13,7 +13,7 @@ struct ExampleService {
 
    func fetchExample() async -> Example?  {
       let result = try? await networkManager.send(
-         networkPath: "https://example.com",
+         networkPath: "https://jsonplaceholder.typicode.com/comments",
          parseModel: Example.self,
          requestType: RequestType.GET,
          queryParameters: nil, body: nil) {
