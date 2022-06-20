@@ -18,7 +18,7 @@ class NetworkManager: INetworkManager {
    
    var networkingOptions: NetworkingOptions
    
-   private init(networkingOptions: NetworkingOptions) {
+    init(networkingOptions: NetworkingOptions) {
       self.networkingOptions = networkingOptions
    }
    
@@ -28,8 +28,8 @@ class NetworkManager: INetworkManager {
       networkPath: String,
       parseModel: T.Type,
       requestType: RequestType,
-      queryParameters: [String : String],
-      body: [String : String],
+      queryParameters: [String : String]?=nil,
+      body: [String : String]?=nil,
       onFail: @escaping () -> ()) async throws -> BaseResponseModel<T>  {
 
          guard var url = URL(string: networkPath) else { return BaseResponseModel(response: nil, data: nil) }

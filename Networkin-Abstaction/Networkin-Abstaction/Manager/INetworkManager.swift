@@ -22,8 +22,8 @@ protocol INetworkManager {
       networkPath: String,
       parseModel: T.Type,
       requestType: RequestType,
-      queryParameters: [String: String],
-      body: [String: String],
+      queryParameters: [String: String]?,
+      body: [String: String]?,
       onFail: @escaping () -> ()
    ) async throws -> BaseResponseModel<T>
 
@@ -32,6 +32,8 @@ protocol INetworkManager {
    func queryGenerator(url : inout URL, queryParameters : [String: String]?)
    func handleRequest(urlRequest : URLRequest) async -> (Data,URLResponse)?
 }
+
+
 
 extension INetworkManager {
 
