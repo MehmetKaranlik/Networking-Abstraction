@@ -13,14 +13,10 @@ import Foundation
 import Foundation
 
    // MARK: - ExampleElement
-struct ExampleElement: Codable {
-   let postID, id: Int?
-   let name, email, body: String?
-
-   enum CodingKeys: String, CodingKey {
-      case postID = "postId"
-      case id, name, email, body
-   }
+struct LoginModel: Codable {
+   let id: Int
+   let name, surname, mail, password: String
+   let active: Int
+   let dateOfStart: String
+      //    let usergroup, team, premium, logs: String
 }
-
-typealias Example = [ExampleElement]

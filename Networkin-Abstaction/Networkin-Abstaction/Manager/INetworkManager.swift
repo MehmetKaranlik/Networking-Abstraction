@@ -1,107 +1,90 @@
-//
-//  INetworkManager.swift
-//  Networkin-Abstaction
-//
-//  Created by mehmet karanlık on 20.06.2022.
-//
 
 import Foundation
 
-
-struct BaseResponseModel<T:Codable>  {
-   let response : URLResponse?
-   let data : T?
+enum RequestType: String {
+   case GET
+   case POST
+   case DELETE
+   case PUT
 }
 
+enum BodyType {
+   case JSON
+   case MULTIFORM
+}
+
+struct BaseNetworkResponse<T: Codable> {
+   let response: URLResponse?
+   let data: T?
+}
 
 protocol INetworkManager {
-
-   var networkingOptions : NetworkingOptions { get set }
-
    func send<T: Codable>(
       networkPath: String,
       parseModel: T.Type,
       requestType: RequestType,
-      queryParameters: [String: String]?,
       body: [String: String]?,
-      onFail: @escaping () -> ()
-   ) async throws -> BaseResponseModel<T>
+      bodyType: BodyType,
+      queryParameters: [String: String]?
+   ) async -> BaseNetworkResponse<T>
 
-   func bodyGenerator(request : inout URLRequest, data :[String: String ]?)
-   func headerGenerator(request : inout URLRequest)
-   func queryGenerator(url : inout URL, queryParameters : [String: String]?)
-   func handleRequest(urlRequest : URLRequest) async -> (Data,URLResponse)?
-   func refreshToken() async -> String?
-   func decodeData<T:Codable>(model : T.Type , data : Data) -> T?
+   func headerGenerator(request: inout URLRequest)
+   func bodyGenerator(request: inout URLRequest, body: [String: String]?, bodyType:  BodyType)
+   func queryGenerator(requestURL: inout URL, queryParameters: [String: String]?)
+   func handleRequest(request: URLRequest) async -> (Data?, URLResponse?)
+   func decodeData<T: Codable>(data: Data, parseModel: T.Type) -> T?
 }
 
-
-
 extension INetworkManager {
+   func headerGenerator(request: inout URLRequest) {
 
-   func queryGenerator(url : inout URL, queryParameters : [String: String]?) {
+      let headers = [
+         "Content-Type": "application/json",
+         "Accept": "application/json"
+      ]
+  
+      request.allHTTPHeaderFields = headers
+   }
+
+   func bodyGenerator(request: inout URLRequest, body: [String: String]?, bodyType:  BodyType) {
+      guard body != nil else { return }
+      if bodyType == .JSON {
+         let data = try? JSONSerialization.data(withJSONObject: body!, options: .prettyPrinted)
+         request.httpBody = data
+      }else {
+         var components = URLComponents()
+         var queryItems = [URLQueryItem]()
+         body?.forEach{ queryItems.append(URLQueryItem(name: $0, value: $1))  }
+         components.queryItems = queryItems
+         request.httpBody = components.query?.data(using: .utf8)
+
+      }
+   }
+
+   func queryGenerator(requestURL: inout URL, queryParameters: [String: String]?) {
       guard queryParameters != nil else { return }
       var queries = [URLQueryItem]()
-      queryParameters!.forEach {
-         queries.append(URLQueryItem(name: $0, value: $1))
-      }
-      url.append(queryItems: queries)
+      queryParameters!.forEach { queries.append(URLQueryItem(name: $0, value: $1)) }
+      requestURL.append(queryItems: queries)
    }
 
-   func headerGenerator(request : inout URLRequest) {
-      request.allHTTPHeaderFields = [
-         "Authorization" : "Bearer \(networkingOptions.accessToken)",
-         "Content-Type": "application/json"
-      ]
-   }
-
-   func bodyGenerator(request : inout URLRequest, data :[String: String ]? ) {
-      guard data != nil else { return }
-      let body = try? JSONSerialization.data(withJSONObject: data!,options: .prettyPrinted)
-      request.httpBody = body
-   }
-
-   func handleRequest(urlRequest : URLRequest) async -> (Data,URLResponse)? {
+   func handleRequest(request: URLRequest) async -> (Data?, URLResponse?) {
       do {
-         let (data,response) = try await URLSession.shared.data(for: urlRequest)
-         return (data,response)
-      }catch let e {
-
-         print("""
-            -----------------------------------
-            Error while fetching data : \(e)
-            -----------------------------------
-            """
-         )
+         let (data, response) = try await URLSession.shared.data(for: request)
+         return (data, response)
+      } catch let e {
+         print("Result : \(e)")
+         return (nil,nil)
       }
-      return nil
-   }
-   
-   func refreshToken() async -> String? {
-      let url = URL(string: networkingOptions.accessTokenURL)!
-      let (data,response) = try! await  URLSession.shared.data(from: url)
-      guard let response = response as? HTTPURLResponse else { return nil }
-      if response.statusCode > 199 && response.statusCode < 300 {
-         let decodedData = try? JSONDecoder().decode(RefreshTokenResponse.self, from: data)
-         return decodedData?.accesToken
-      }
-      return nil
    }
 
-   func decodeData<T:Codable>(model : T.Type , data : Data) -> T? {
+   func decodeData<T: Codable>(data: Data, parseModel: T.Type) -> T? {
       do {
-         let dataModel = try JSONDecoder().decode(T.self, from: data)
-         return dataModel
-      }catch let e {
-         print(
-            """
-            ------------------------------
-            JSON Serialization Error : \(e)
-            ------------------------------
-            """
-         )
+         let data = try JSONDecoder().decode(T.self, from: data)
+         return data
+      } catch let e {
+         print(e)
          return nil
       }
    }
-
 }

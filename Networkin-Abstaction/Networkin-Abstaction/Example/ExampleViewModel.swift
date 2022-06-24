@@ -10,10 +10,11 @@ import Foundation
 
 class ExampleViewModel : ExampleBaseViewModel, ObservableObject {
 
-   let service = ExampleService(networkManager: networkManager)
+   let service = ExampleService()
 
- @Published  var example : Example? = [] {
+ @Published  var example : LoginModel?  {
       didSet{
+         print(example)
       }
    }
 

@@ -9,14 +9,16 @@ import Foundation
 
 
 struct ExampleService {
-   let networkManager : NetworkManager
+   let networkManager : NetworkManager = NetworkManager()
 
-   func fetchExample() async -> Example?  {
+   func fetchExample() async -> LoginModel?  {
       let result = try? await networkManager.send(
          networkPath: "https://jsonplaceholder.typicode.com/comments",
-         parseModel: Example.self,
-         requestType: RequestType.GET,
-         queryParameters: nil, body: nil) {}
+         parseModel: LoginModel.self,
+         requestType: .POST,
+         body: nil, bodyType: .JSON, queryParameters: nil)
+
+      print("Result : \(result)")
       return result?.data != nil ? result?.data : nil
    }
 }
